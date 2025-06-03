@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Colorier une image (avec sauvegarde locale)</title>
+   
     <style>
         :root {
             --primary-color: #4a6fa5;
