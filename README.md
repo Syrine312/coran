@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -150,7 +151,7 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-
+            
             label {
                 flex-direction: row;
                 justify-content: space-between;
@@ -173,14 +174,7 @@
         </label>
         <label>
             Opacité :
-            <input
-                type="range"
-                id="opacitySlider"
-                min="0"
-                max="1"
-                step="0.01"
-                value="0.2"
-            />
+            <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="0.2" />
         </label>
         <label>
             Taille pinceau :
@@ -206,7 +200,6 @@
         let drawing = false;
         let img = new Image();
 
-        // Charger image sauvegardée
         const savedImage = localStorage.getItem("savedCanvas");
         if (savedImage) {
             const tempImg = new Image();
@@ -218,7 +211,6 @@
             tempImg.src = savedImage;
         }
 
-        // Chargement image
         upload.addEventListener("change", (e) => {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -239,13 +231,11 @@
             }
         });
 
-        // Sauvegarde automatique
         function saveCanvas() {
             const dataURL = canvas.toDataURL("image/png");
             localStorage.setItem("savedCanvas", dataURL);
         }
 
-        // Fonction de dessin à des coordonnées
         function drawAt(x, y) {
             const color = colorPicker.value;
             const opacity = parseFloat(opacitySlider.value);
@@ -261,46 +251,50 @@
             ctx.fill();
         }
 
-        // Dessin avec souris
-        canvas.addEventListener("mousedown", (e) => {
-            drawing = true;
-            drawMouse(e);
-        });
-
+        // Souris
+        canvas.addEventListener("mousedown", () => drawing = true);
         canvas.addEventListener("mouseup", () => {
             drawing = false;
             saveCanvas();
         });
-
         canvas.addEventListener("mouseleave", () => {
             drawing = false;
             saveCanvas();
         });
-
         canvas.addEventListener("mousemove", (e) => {
-            if (drawing) drawMouse(e);
-        });
-
-        function drawMouse(e) {
+            if (!drawing) return;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             drawAt(x, y);
-        }
+        });
 
-        // Touch (mobile) : dessiner à chaque tap
+        // Mobile (tactile)
         canvas.addEventListener("touchstart", (e) => {
             e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
+            drawing = true;
+            drawTouch(e.touches[0]);
+        });
 
-            drawAt(x, y);
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            if (drawing) {
+                drawTouch(e.touches[0]);
+            }
+        });
+
+        canvas.addEventListener("touchend", () => {
+            drawing = false;
             saveCanvas();
         });
 
-        // Effacer tout
+        function drawTouch(touch) {
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.pageX - rect.left - window.scrollX;
+            const y = touch.pageY - rect.top - window.scrollY;
+            drawAt(x, y);
+        }
+
         clearBtn.addEventListener("click", () => {
             if (img.src) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -311,7 +305,6 @@
             saveCanvas();
         });
 
-        // Télécharger l'image
         downloadBtn.addEventListener("click", () => {
             const link = document.createElement("a");
             link.download = "image_coloriee.png";
