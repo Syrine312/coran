@@ -150,7 +150,7 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             label {
                 flex-direction: row;
                 justify-content: space-between;
@@ -173,14 +173,7 @@
         </label>
         <label>
             Opacité :
-            <input
-                type="range"
-                id="opacitySlider"
-                min="0"
-                max="1"
-                step="0.01"
-                value="0.2"
-            />
+            <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="0.2" />
         </label>
         <label>
             Taille pinceau :
@@ -229,7 +222,7 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    saveCanvas(); // Sauvegarde auto après chargement image
+                    saveCanvas();
                 };
                 img.src = event.target.result;
             };
@@ -239,31 +232,62 @@
             }
         });
 
-        // Sauvegarde automatique
         function saveCanvas() {
             const dataURL = canvas.toDataURL("image/png");
             localStorage.setItem("savedCanvas", dataURL);
         }
 
-        // Dessin
+        // Souris
         canvas.addEventListener("mousedown", () => (drawing = true));
         canvas.addEventListener("mouseup", () => {
             drawing = false;
-            saveCanvas(); // Sauvegarde après dessin
+            saveCanvas();
         });
         canvas.addEventListener("mouseleave", () => {
             drawing = false;
             saveCanvas();
         });
-        canvas.addEventListener("mousemove", draw);
+        canvas.addEventListener("mousemove", drawMouse);
 
-        function draw(e) {
+        function drawMouse(e) {
             if (!drawing) return;
 
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
+            drawAt(x, y);
+        }
+
+        // Tactile
+        canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            drawing = true;
+            drawTouch(e);
+        });
+
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            drawTouch(e);
+        });
+
+        canvas.addEventListener("touchend", () => {
+            drawing = false;
+            saveCanvas();
+        });
+
+        function drawTouch(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            drawAt(x, y);
+        }
+
+        // Fonction centrale pour dessiner
+        function drawAt(x, y) {
             const color = colorPicker.value;
             const opacity = parseFloat(opacitySlider.value);
             const size = parseInt(brushSize.value);
@@ -286,10 +310,10 @@
             } else {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
-            saveCanvas(); // Sauvegarde après effacement
+            saveCanvas();
         });
 
-        // Télécharger l'image finale
+        // Télécharger
         downloadBtn.addEventListener("click", () => {
             const link = document.createElement("a");
             link.download = "image_coloriee.png";
