@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
+   
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -78,11 +78,6 @@
             padding: 0;
         }
 
-        input[type="color"]::-webkit-color-swatch {
-            border: none;
-            border-radius: 50%;
-        }
-
         input[type="range"] {
             width: 100px;
             cursor: pointer;
@@ -151,7 +146,7 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             label {
                 flex-direction: row;
                 justify-content: space-between;
@@ -160,7 +155,6 @@
         }
     </style>
 </head>
-
 <body>
     <h2>تشجيع على حفظ القران</h2>
 
@@ -200,6 +194,7 @@
         let drawing = false;
         let img = new Image();
 
+        // Récupérer l'image sauvegardée
         const savedImage = localStorage.getItem("savedCanvas");
         if (savedImage) {
             const tempImg = new Image();
@@ -251,16 +246,14 @@
             ctx.fill();
         }
 
-        // Souris
-        canvas.addEventListener("mousedown", () => drawing = true);
-        canvas.addEventListener("mouseup", () => {
-            drawing = false;
-            saveCanvas();
+        canvas.addEventListener("mousedown", (e) => {
+            drawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawAt(x, y);
         });
-        canvas.addEventListener("mouseleave", () => {
-            drawing = false;
-            saveCanvas();
-        });
+
         canvas.addEventListener("mousemove", (e) => {
             if (!drawing) return;
             const rect = canvas.getBoundingClientRect();
@@ -269,31 +262,41 @@
             drawAt(x, y);
         });
 
-        // Mobile (tactile)
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            saveCanvas();
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            drawing = false;
+            saveCanvas();
+        });
+
+        // Support mobile : touch
         canvas.addEventListener("touchstart", (e) => {
             e.preventDefault();
             drawing = true;
-            drawTouch(e.touches[0]);
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            drawAt(x, y);
         });
 
         canvas.addEventListener("touchmove", (e) => {
             e.preventDefault();
-            if (drawing) {
-                drawTouch(e.touches[0]);
-            }
+            if (!drawing) return;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            drawAt(x, y);
         });
 
         canvas.addEventListener("touchend", () => {
             drawing = false;
             saveCanvas();
         });
-
-        function drawTouch(touch) {
-            const rect = canvas.getBoundingClientRect();
-            const x = touch.pageX - rect.left - window.scrollX;
-            const y = touch.pageY - rect.top - window.scrollY;
-            drawAt(x, y);
-        }
 
         clearBtn.addEventListener("click", () => {
             if (img.src) {
