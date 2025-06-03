@@ -173,7 +173,14 @@
         </label>
         <label>
             Opacité :
-            <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="0.2" />
+            <input
+                type="range"
+                id="opacitySlider"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.2"
+            />
         </label>
         <label>
             Taille pinceau :
@@ -232,61 +239,13 @@
             }
         });
 
+        // Sauvegarde automatique
         function saveCanvas() {
             const dataURL = canvas.toDataURL("image/png");
             localStorage.setItem("savedCanvas", dataURL);
         }
 
-        // Souris
-        canvas.addEventListener("mousedown", () => (drawing = true));
-        canvas.addEventListener("mouseup", () => {
-            drawing = false;
-            saveCanvas();
-        });
-        canvas.addEventListener("mouseleave", () => {
-            drawing = false;
-            saveCanvas();
-        });
-        canvas.addEventListener("mousemove", drawMouse);
-
-        function drawMouse(e) {
-            if (!drawing) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            drawAt(x, y);
-        }
-
-        // Tactile
-        canvas.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            drawing = true;
-            drawTouch(e);
-        });
-
-        canvas.addEventListener("touchmove", (e) => {
-            e.preventDefault();
-            drawTouch(e);
-        });
-
-        canvas.addEventListener("touchend", () => {
-            drawing = false;
-            saveCanvas();
-        });
-
-        function drawTouch(e) {
-            if (!drawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-
-            drawAt(x, y);
-        }
-
-        // Fonction centrale pour dessiner
+        // Fonction de dessin à des coordonnées
         function drawAt(x, y) {
             const color = colorPicker.value;
             const opacity = parseFloat(opacitySlider.value);
@@ -302,6 +261,45 @@
             ctx.fill();
         }
 
+        // Dessin avec souris
+        canvas.addEventListener("mousedown", (e) => {
+            drawing = true;
+            drawMouse(e);
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            saveCanvas();
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            drawing = false;
+            saveCanvas();
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (drawing) drawMouse(e);
+        });
+
+        function drawMouse(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawAt(x, y);
+        }
+
+        // Touch (mobile) : dessiner à chaque tap
+        canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            drawAt(x, y);
+            saveCanvas();
+        });
+
         // Effacer tout
         clearBtn.addEventListener("click", () => {
             if (img.src) {
@@ -313,7 +311,7 @@
             saveCanvas();
         });
 
-        // Télécharger
+        // Télécharger l'image
         downloadBtn.addEventListener("click", () => {
             const link = document.createElement("a");
             link.download = "image_coloriee.png";
