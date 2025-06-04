@@ -156,7 +156,7 @@
     </style>
 </head>
 <body>
-    <h2>تشجيع على حفظ القران</h2>
+    <h2>colorer maintenant</h2>
 
     <label for="upload" class="upload-btn">Choisir une image</label>
     <input type="file" id="upload" accept="image/*" />
